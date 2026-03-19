@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html {
+    @apply bg-surface-0 text-neutral-100 antialiased;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  /* Thin scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-surface-1;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-surface-3 rounded-full;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium
+           transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
+           disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn bg-accent text-white hover:bg-accent-hover;
+  }
+  .btn-secondary {
+    @apply btn bg-surface-2 text-neutral-200 hover:bg-surface-3;
+  }
+  .btn-ghost {
+    @apply btn text-neutral-400 hover:bg-surface-2 hover:text-neutral-100;
+  }
+
+  .input {
+    @apply w-full rounded-lg border border-surface-3 bg-surface-1 px-3 py-2 text-sm text-neutral-100
+           placeholder:text-neutral-500 outline-none focus:border-accent focus:ring-1 focus:ring-accent
+           transition-colors;
+  }
+
+  .card {
+    @apply rounded-xl border border-surface-2 bg-surface-1 p-4;
+  }
+}

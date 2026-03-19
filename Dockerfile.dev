@@ -1,0 +1,21 @@
+FROM node:20-alpine
+
+# Prisma requires OpenSSL on Alpine
+RUN apk add --no-cache openssl libc6-compat
+
+WORKDIR /app
+
+# Install dependencies (layer-cached until package.json changes)
+COPY package*.json ./
+RUN npm install
+
+# Copy full source (node_modules excluded via .dockerignore)
+COPY . .
+
+# Generate Prisma client from the final schema — runs every build,
+# ensuring the client always matches the current schema.prisma
+RUN npx prisma generate
+
+EXPOSE 3000
+
+CMD ["npm", "run", "dev"]
