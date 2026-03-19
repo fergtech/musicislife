@@ -1,14 +1,14 @@
 // Service Worker for musicislyfe PWA
-// Strategy:
-//   - Static assets  → cache-first (long TTL)
-//   - API routes     → network-first (fall back to cache)
-//   - Navigation     → network-first (fall back to cached shell)
+// Cache strategy:
+//   - Static assets (_next/static, icons, fonts) → cache-first
+//   - Everything else (API, HTML pages)          → network-only, no caching
+//
+// Authenticated API responses and user-specific HTML are intentionally never
+// cached. Caching them would allow stale user data to persist across logout
+// or session changes, which is a privacy/consistency risk.
 
 const CACHE_NAME = "musicislyfe-v1";
-const STATIC_ASSETS = [
-  "/",
-  "/offline.html",
-];
+const STATIC_ASSETS = ["/offline.html"];
 
 // ─── Install ────────────────────────────────────────────────────────────────
 self.addEventListener("install", (event) => {
@@ -35,17 +35,10 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Don't intercept non-GET or cross-origin requests
   if (request.method !== "GET") return;
   if (url.origin !== self.location.origin) return;
 
-  // API routes: network-first, fall back to cache
-  if (url.pathname.startsWith("/api/")) {
-    event.respondWith(networkFirst(request));
-    return;
-  }
-
-  // Static assets (_next/static, images, icons): cache-first
+  // Static assets: cache-first (safe — no user data, content-hashed filenames)
   if (
     url.pathname.startsWith("/_next/static/") ||
     url.pathname.startsWith("/icons/") ||
@@ -55,14 +48,9 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Navigation (HTML pages): network-first
-  if (request.headers.get("accept")?.includes("text/html")) {
-    event.respondWith(networkFirst(request));
-    return;
-  }
-
-  // Everything else: network-first
-  event.respondWith(networkFirst(request));
+  // API routes and HTML pages: network-only.
+  // On network failure, show the offline page for navigations only.
+  event.respondWith(networkOnly(request));
 });
 
 async function cacheFirst(request) {
@@ -80,18 +68,11 @@ async function cacheFirst(request) {
   }
 }
 
-async function networkFirst(request) {
+async function networkOnly(request) {
   try {
-    const response = await fetch(request);
-    if (response.ok) {
-      const cache = await caches.open(CACHE_NAME);
-      cache.put(request, response.clone());
-    }
-    return response;
+    return await fetch(request);
   } catch {
-    const cached = await caches.match(request);
-    if (cached) return cached;
-    // For navigation requests, return the offline page
+    // Only substitute the offline page for HTML navigation requests
     if (request.headers.get("accept")?.includes("text/html")) {
       const offline = await caches.match("/offline.html");
       if (offline) return offline;

@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { renderToStream } from "@react-pdf/renderer";
-import { createElement } from "react";
+import { createElement, type ReactElement } from "react";
 import { ListPDF } from "@/components/ListPDF";
 
 interface Params {
@@ -38,7 +38,9 @@ export async function GET(_req: NextRequest, { params }: Params) {
     })),
   };
 
-  const stream = await renderToStream(createElement(ListPDF, { list: listData }));
+  const stream = await renderToStream(
+    createElement(ListPDF, { list: listData }) as ReactElement,
+  );
 
   const safeName = list.name.replace(/[^a-z0-9]/gi, "-").toLowerCase();
   return new NextResponse(stream as unknown as ReadableStream, {
