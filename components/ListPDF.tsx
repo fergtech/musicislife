@@ -6,7 +6,6 @@ import {
   Text,
   Image,
   StyleSheet,
-  Font,
 } from "@react-pdf/renderer";
 
 // Use built-in Helvetica so no font files are needed
