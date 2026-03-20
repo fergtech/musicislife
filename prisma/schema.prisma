@@ -23,6 +23,7 @@ model List {
   id          String     @id @default(cuid())
   name        String
   description String?
+  shareToken  String?    @unique   // set = publicly shareable via /share/[token]
   userId      String
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt

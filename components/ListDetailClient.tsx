@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ListItemCard } from "./ListItemCard";
 import { SortControls, SortField, SortDir } from "./SortControls";
 import { AddItemModal } from "./AddItemModal";
+import { ListShareMenu } from "./ListShareMenu";
 
 interface Item {
   id: string;
@@ -158,9 +159,7 @@ export function ListDetailClient({ list }: Props) {
             </div>
             <div className="flex shrink-0 gap-2">
               {items.length > 0 && (
-                <a href={`/api/lists/${list.id}/export`} download className="btn-secondary text-sm">
-                  Export PDF
-                </a>
+                <ListShareMenu listId={list.id} listName={listName} />
               )}
               <button onClick={() => setShowModal(true)} className="btn-primary shrink-0">
                 + Add item

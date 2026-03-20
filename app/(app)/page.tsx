@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { ListCard } from "@/components/ListCard";
 import { CreateListForm } from "@/components/CreateListForm";
+import { ImportListButton } from "@/components/ImportListButton";
 
 export const metadata = { title: "My Lists" };
 
@@ -22,6 +23,7 @@ export default async function DashboardPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">My Lists</h1>
+        <ImportListButton />
       </div>
 
       <CreateListForm />

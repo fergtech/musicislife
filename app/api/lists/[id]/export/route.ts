@@ -10,7 +10,7 @@ interface Params {
   params: { id: string };
 }
 
-export async function GET(_req: NextRequest, { params }: Params) {
+export async function GET(req: NextRequest, { params }: Params) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -23,6 +23,39 @@ export async function GET(_req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
+  const safeName = list.name.replace(/[^a-z0-9]/gi, "-").toLowerCase();
+
+  // ── JSON export ────────────────────────────────────────────────────────────
+  if (req.nextUrl.searchParams.get("format") === "json") {
+    const payload = {
+      version: 1,
+      app: "musicislyfe",
+      name: list.name,
+      description: list.description ?? null,
+      exportedAt: new Date().toISOString(),
+      items: list.items.map((item) => ({
+        type: item.type as "SONG" | "ALBUM",
+        mbId: item.mbId,
+        artistMbId: item.artistMbId ?? null,
+        title: item.title,
+        artistName: item.artistName,
+        albumName: item.albumName ?? null,
+        releaseYear: item.releaseYear ?? null,
+        coverArtUrl: item.coverArtUrl ?? null,
+        writers: item.writers,
+        producers: item.producers,
+      })),
+    };
+
+    return new NextResponse(JSON.stringify(payload, null, 2), {
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Disposition": `attachment; filename="${safeName}.musicislyfe.json"`,
+      },
+    });
+  }
+
+  // ── PDF export (default) ───────────────────────────────────────────────────
   const listData = {
     name: list.name,
     description: list.description,
@@ -42,7 +75,6 @@ export async function GET(_req: NextRequest, { params }: Params) {
     createElement(ListPDF, { list: listData }) as ReactElement,
   );
 
-  const safeName = list.name.replace(/[^a-z0-9]/gi, "-").toLowerCase();
   return new NextResponse(stream as unknown as ReadableStream, {
     headers: {
       "Content-Type": "application/pdf",
