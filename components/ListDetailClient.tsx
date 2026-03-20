@@ -38,6 +38,7 @@ export function ListDetailClient({ list }: Props) {
   const [items, setItems] = useState<Item[]>(list.items);
   const [sortField, setSortField] = useState<SortField>("createdAt");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
+  const [artError, setArtError] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -73,6 +74,13 @@ export function ListDetailClient({ list }: Props) {
     setEditing(false);
   }
 
+  const featuredArt = useMemo(() => {
+    const arts = items.filter((i) => i.coverArtUrl).map((i) => i.coverArtUrl as string);
+    if (!arts.length) return null;
+    const seed = list.id.charCodeAt(list.id.length - 1) % arts.length;
+    return arts[seed];
+  }, [items, list.id]);
+
   const sorted = useMemo(() => {
     return [...items].sort((a, b) => {
       const av = a[sortField];
@@ -96,6 +104,7 @@ export function ListDetailClient({ list }: Props) {
 
   function handleAdded(item: unknown) {
     setItems((prev) => [...prev, item as Item]);
+    setArtError(false);
   }
 
   return (
@@ -134,10 +143,10 @@ export function ListDetailClient({ list }: Props) {
             </div>
           </div>
         ) : (
-          <div className="mt-2 flex items-start justify-between gap-4">
-            <div className="min-w-0">
+          <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="w-full min-w-0">
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold truncate">{listName}</h1>
+                <h1 className="break-words text-2xl font-bold sm:truncate">{listName}</h1>
                 <button
                   onClick={() => setEditing(true)}
                   className="shrink-0 text-neutral-600 hover:text-neutral-300 transition-colors"
@@ -148,8 +157,20 @@ export function ListDetailClient({ list }: Props) {
                   </svg>
                 </button>
               </div>
+              {featuredArt && !artError && (
+                <div className="mt-3 h-28 w-full overflow-hidden rounded-xl sm:h-36">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={featuredArt}
+                    alt=""
+                    aria-hidden
+                    className="h-full w-full object-cover brightness-75"
+                    onError={() => setArtError(true)}
+                  />
+                </div>
+              )}
               {listDescription && (
-                <p className="mt-1 text-sm text-neutral-400 leading-relaxed max-w-prose">
+                <p className="mt-1 max-w-prose text-sm leading-relaxed text-neutral-400 sm:max-w-none">
                   {listDescription}
                 </p>
               )}
@@ -157,11 +178,13 @@ export function ListDetailClient({ list }: Props) {
                 {items.length} {items.length === 1 ? "item" : "items"}
               </p>
             </div>
-            <div className="flex shrink-0 gap-2">
+            <div className="flex w-full gap-2 sm:w-auto sm:shrink-0">
               {items.length > 0 && (
-                <ListShareMenu listId={list.id} listName={listName} />
+                <div className="flex-1 sm:flex-none">
+                  <ListShareMenu listId={list.id} listName={listName} />
+                </div>
               )}
-              <button onClick={() => setShowModal(true)} className="btn-primary shrink-0">
+              <button onClick={() => setShowModal(true)} className="btn-primary flex-1 sm:flex-none">
                 + Add item
               </button>
             </div>

@@ -16,7 +16,23 @@ export default async function DashboardPage() {
   const lists = await prisma.list.findMany({
     where: { userId },
     orderBy: { updatedAt: "desc" },
-    include: { _count: { select: { items: true } } },
+    include: {
+      _count: { select: { items: true } },
+      // Fetch up to 8 items that have cover art so we can pick one to feature
+      items: {
+        where: { coverArtUrl: { not: null } },
+        take: 8,
+        select: { coverArtUrl: true },
+      },
+    },
+  });
+
+  // Pick a consistent (non-random) cover per list using the list ID as a seed
+  // so the same list always shows the same art across page loads.
+  const listsWithArt = lists.map((list) => {
+    const arts = list.items.map((i) => i.coverArtUrl as string);
+    const seed = list.id.charCodeAt(list.id.length - 1) % (arts.length || 1);
+    return { ...list, featuredArt: arts[seed] ?? null };
   });
 
   return (
@@ -34,8 +50,8 @@ export default async function DashboardPage() {
         </p>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
-          {lists.map((list) => (
-            <ListCard key={list.id} list={list} />
+          {listsWithArt.map((list) => (
+            <ListCard key={list.id} list={list} featuredArt={list.featuredArt} />
           ))}
         </div>
       )}
