@@ -17,6 +17,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     select: { username: true, avatarUrl: true },
   });
 
+  const profileHref = profile ? `/u/${profile.username}` : "/settings/profile";
+
   return (
     <div className="min-h-screen bg-surface-0">
       {/* Top nav */}
@@ -68,26 +70,26 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
           <div className="flex items-center justify-end gap-2">
             <GlobalSearch />
-            {profile ? (
-              <Link
-                href={`/u/${profile.username}`}
-                className="flex items-center gap-2 rounded-lg px-2 py-1 hover:bg-surface-2 transition-colors"
-                title={`@${profile.username}`}
-              >
+            <Link
+              href={profileHref}
+              aria-label={profile ? "Open profile" : "Set up profile"}
+              className="flex items-center gap-2 rounded-lg px-2 py-1 transition-colors hover:bg-surface-2"
+              title={profile ? `@${profile.username}` : "Set up profile"}
+            >
+              {profile ? (
                 <Avatar username={profile.username} avatarUrl={profile.avatarUrl} size={28} />
-                <span className="hidden text-sm text-neutral-300 sm:block">
-                  @{profile.username}
+              ) : (
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-2 text-neutral-300" aria-hidden="true">
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M20 21a8 8 0 10-16 0" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
                 </span>
-              </Link>
-            ) : (
-              <Link
-                href="/settings/profile"
-                className="hidden text-sm text-accent hover:underline sm:block"
-                title="Set up your profile"
-              >
-                Set up profile
-              </Link>
-            )}
+              )}
+              <span className="hidden text-sm text-neutral-300 sm:block">
+                {profile ? `@${profile.username}` : "Set up profile"}
+              </span>
+            </Link>
             <SignOutButton />
           </div>
         </div>
