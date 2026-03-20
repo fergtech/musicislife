@@ -478,10 +478,24 @@ export async function discover(params: DiscoverParams): Promise<DiscoverResponse
  * "recordings" is a valid sub-query inc for /release. It populates each
  * track's `recording` object with id, title, and length.
  */
-export async function fetchAlbumTracklist(releaseGroupId: string): Promise<AlbumTracklist> {
-  const releaseId = await resolveReleaseGroupToRelease(releaseGroupId);
+export async function fetchAlbumTracklist(id: string): Promise<AlbumTracklist> {
+  // Try id as a release-group MBID first (the normal case for items saved after the RG-ID fix).
+  let releaseId = await resolveReleaseGroupToRelease(id);
+  let releaseGroupId = id;
+
   if (!releaseId) {
-    throw new Error(`No releases found for release group ${releaseGroupId}`);
+    // Fall back: id might be a release MBID (items saved before the RG-ID fix).
+    // Fetch the release directly to confirm it exists and recover its release-group ID.
+    try {
+      const rel = await mbGet<{ id: string; "release-group"?: { id: string } }>(
+        `/release/${id}`,
+        {},
+      );
+      releaseId = rel.id;
+      releaseGroupId = rel["release-group"]?.id ?? id;
+    } catch {
+      throw new Error(`Not a valid release-group or release MBID: ${id}`);
+    }
   }
 
   const release = await mbGet<MBReleaseDetail>(`/release/${releaseId}`, {

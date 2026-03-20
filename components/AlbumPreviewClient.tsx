@@ -8,6 +8,7 @@ import {
   type ChangeEvent,
 } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { AlbumTracklist, ItunesPreview } from "@/types";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -80,6 +81,8 @@ interface Props {
 }
 
 export function AlbumPreviewClient({ album }: Props) {
+  const router = useRouter();
+
   // Track rows with progressive preview state
   const [tracks, setTracks] = useState<TrackRow[]>(() =>
     album.tracks.map((t) => ({ ...t, previewState: "loading" })),
@@ -229,10 +232,9 @@ export function AlbumPreviewClient({ album }: Props) {
     const res = await fetch(`/api/lists/${selectedListId}/items`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      // Use album.releaseId (already resolved server-side during tracklist fetch)
-      // so the items route can call fetchAlbumMetadata() directly without an
-      // extra MB resolve step that risks rate-limiting.
-      body: JSON.stringify({ mbId: album.releaseId, type: "ALBUM" }),
+      // Send the release-group ID so the items route stores it as mbId —
+      // the album preview page needs the release-group ID, not a release ID.
+      body: JSON.stringify({ releaseGroupId: album.releaseGroupId, type: "ALBUM" }),
     });
 
     setAddingAlbum(false);
@@ -275,15 +277,15 @@ export function AlbumPreviewClient({ album }: Props) {
       <audio ref={audioRef} preload="none" />
 
       {/* Back nav */}
-      <Link
-        href="/discover"
+      <button
+        onClick={() => router.back()}
         className="inline-flex items-center gap-1.5 text-sm text-neutral-500 hover:text-neutral-200 transition-colors"
       >
         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
         </svg>
-        Back to Discover
-      </Link>
+        Back
+      </button>
 
       {/* Album header */}
       <div className="flex flex-col gap-5 sm:flex-row sm:items-end">

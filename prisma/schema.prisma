@@ -16,7 +16,21 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  lists List[]
+  lists   List[]
+  profile Profile?
+}
+
+model Profile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  username    String   @unique
+  avatarUrl   String?  // null = auto-generated gradient; custom = base64 data URL
+  socialLinks Json     @default("{}")
+  isPublic    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model List {

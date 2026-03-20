@@ -1,11 +1,14 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
+import { usePlayer } from "@/contexts/PlayerContext";
 
 interface Props {
   item: {
     id: string;
     type: "SONG" | "ALBUM";
+    mbId: string;
     title: string;
     artistName: string;
     albumName: string | null;
@@ -19,8 +22,13 @@ interface Props {
 }
 
 export function ListItemCard({ item, onDelete, deleting }: Props) {
-  return (
-    <div className="flex items-center gap-3 rounded-lg border border-surface-2 bg-surface-1 p-3 hover:border-surface-3 transition-colors">
+  const { playSong, currentSong } = usePlayer();
+
+  const isCurrentlyPlaying = currentSong?.mbId === item.mbId;
+
+  // Shared cover + info block used inside both the Link and the button
+  const inner = (
+    <>
       {/* Cover art */}
       <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded bg-surface-3">
         {item.coverArtUrl ? (
@@ -40,7 +48,12 @@ export function ListItemCard({ item, onDelete, deleting }: Props) {
 
       {/* Info */}
       <div className="min-w-0 flex-1">
-        <p className="truncate font-medium text-sm text-neutral-100">{item.title}</p>
+        <p className={`truncate font-medium text-sm transition-colors group-hover:text-accent ${isCurrentlyPlaying ? "text-accent" : "text-neutral-100"}`}>
+          {item.title}
+          {isCurrentlyPlaying && (
+            <span className="ml-1.5 text-xs font-normal animate-pulse">▶</span>
+          )}
+        </p>
         <p className="truncate text-xs text-neutral-400">
           {item.artistName}
           {item.albumName && item.type === "SONG" && (
@@ -55,6 +68,36 @@ export function ListItemCard({ item, onDelete, deleting }: Props) {
           </p>
         )}
       </div>
+    </>
+  );
+
+  return (
+    <div className="flex items-center gap-3 rounded-lg border border-surface-2 bg-surface-1 p-3 hover:border-surface-3 transition-colors">
+      {item.type === "SONG" ? (
+        // Songs → tap to play immediately in the global mini player
+        <button
+          onClick={() =>
+            playSong({
+              mbId:       item.mbId,
+              title:      item.title,
+              artistName: item.artistName,
+              albumName:  item.albumName,
+              coverArtUrl: item.coverArtUrl,
+            })
+          }
+          className="group flex min-w-0 flex-1 items-center gap-3 text-left"
+        >
+          {inner}
+        </button>
+      ) : (
+        // Albums → navigate to full preview page with tracklist
+        <Link
+          href={`/discover/preview/${item.mbId}`}
+          className="group flex min-w-0 flex-1 items-center gap-3"
+        >
+          {inner}
+        </Link>
+      )}
 
       {/* Year + type badge */}
       <div className="shrink-0 flex flex-col items-end gap-1">

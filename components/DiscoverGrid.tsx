@@ -101,7 +101,7 @@ function DiscoverCard({
         {/* Hover overlay */}
         <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity">
           <span className="text-xs font-medium text-white">
-            {item.type === "ALBUM" ? "▶ Preview album" : "+ Add to list"}
+            {item.type === "ALBUM" ? "▶ Preview album" : "▶ Preview song"}
           </span>
         </div>
       </div>

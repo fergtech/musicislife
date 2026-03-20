@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { DiscoverFilters, FilterState } from "./DiscoverFilters";
 import { DiscoverGrid } from "./DiscoverGrid";
-import { DiscoverItemModal } from "./DiscoverItemModal";
 import type { DiscoverResult, DiscoverResponse } from "@/types";
 import { DISCOVER_DECADES as DECADES, DISCOVER_GENRES as GENRES } from "@/types";
 
@@ -23,7 +22,6 @@ export function DiscoverClient() {
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<DiscoverResult | null>(null);
   const [error, setError] = useState("");
   // Track the active request to ignore stale responses
   const fetchRef = useRef(0);
@@ -135,24 +133,14 @@ export function DiscoverClient() {
           onLoadMore={handleLoadMore}
           onSelect={(item) => {
             if (item.type === "ALBUM") {
-              // Albums → full preview page with tracklist + audio
               router.push(`/discover/preview/${item.mbId}`);
             } else {
-              // Songs → quick-add modal
-              setSelectedItem(item);
+              router.push(`/discover/preview/song/${item.mbId}`);
             }
           }}
         />
       )}
 
-      {/* Song quick-add modal */}
-      {selectedItem && (
-        <DiscoverItemModal
-          item={selectedItem}
-          onClose={() => setSelectedItem(null)}
-          onAdded={() => {}}
-        />
-      )}
     </div>
   );
 }

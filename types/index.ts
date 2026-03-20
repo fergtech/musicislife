@@ -213,6 +213,45 @@ export interface ItunesPreview {
   durationMs?: number;
 }
 
+// ─── Profile ──────────────────────────────────────────────────────────────────
+
+export interface SocialLinks {
+  instagram?: string;
+  twitter?: string;
+  tiktok?: string;
+  website?: string;
+  email?: string;
+}
+
+export interface ProfileRow {
+  id: string;
+  userId: string;
+  username: string;
+  avatarUrl: string | null;
+  socialLinks: SocialLinks;
+  isPublic: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Shape returned by GET /api/profiles/[username]
+export interface PublicProfileList {
+  id: string;
+  name: string;
+  description: string | null;
+  updatedAt: string;
+  _count: { items: number };
+  featuredArt: string | null;
+}
+
+export interface PublicProfile {
+  username: string;
+  avatarUrl: string | null;
+  socialLinks: SocialLinks;
+  isPublic: boolean;
+  lists: PublicProfileList[];
+}
+
 // ─── Prisma-derived types (extended) ─────────────────────────────────────────
 
 export interface ListWithCount {

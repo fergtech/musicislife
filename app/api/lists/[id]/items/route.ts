@@ -54,7 +54,12 @@ export async function POST(req: NextRequest, { params }: Params) {
   const { type } = parsed.data;
   let { mbId, releaseGroupId } = parsed.data;
 
-  // Resolve release-group → release if coming from Discovery
+  // Resolve release-group → release for metadata fetching.
+  // We keep the release-group ID separately so we can store it as mbId —
+  // the album preview page (fetchAlbumTracklist) needs the release-group ID,
+  // not the individual release ID.
+  let resolvedReleaseGroupId: string | undefined = releaseGroupId;
+
   if (type === "ALBUM" && releaseGroupId && !mbId) {
     const releaseId = await resolveReleaseGroupToRelease(releaseGroupId);
     if (!releaseId) {
@@ -77,17 +82,32 @@ export async function POST(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "Failed to fetch metadata from MusicBrainz" }, { status: 502 });
   }
 
+  // For albums: store the release-group ID as mbId so ListItemCard can link
+  // directly to /discover/preview/[releaseGroupId] (fetchAlbumTracklist expects it).
+  // Fall back to the resolved release MBID for albums added without an RG ID.
+  const storedMbId =
+    type === "ALBUM" && resolvedReleaseGroupId
+      ? resolvedReleaseGroupId
+      : metadata.mbId;
+
+  // Cover art: prefer the release-group CAA URL when we have the RG ID,
+  // since it's more stable than a specific release's art.
+  const coverArtUrl =
+    type === "ALBUM" && resolvedReleaseGroupId
+      ? `https://coverartarchive.org/release-group/${resolvedReleaseGroupId}/front-250`
+      : (metadata.coverArtUrl ?? null);
+
   const item = await prisma.listItem.create({
     data: {
       listId: params.id,
       type,
-      mbId: metadata.mbId,
+      mbId: storedMbId,
       artistMbId: metadata.artistMbId ?? null,
       title: metadata.title,
       artistName: metadata.artistName,
       albumName: metadata.albumName ?? null,
       releaseYear: metadata.releaseYear ?? null,
-      coverArtUrl: metadata.coverArtUrl ?? null,
+      coverArtUrl,
       writers: metadata.writers,
       producers: metadata.producers,
       rawMetadata: metadata.rawMetadata ?? undefined,
