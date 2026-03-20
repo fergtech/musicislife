@@ -15,6 +15,13 @@
     box-sizing: border-box;
   }
 
+  /* Prevent iOS Safari from auto-zooming when tapping inputs.
+     iOS zooms in on any input with font-size < 16px — keeping it at
+     16px avoids that entirely without disabling pinch-to-zoom. */
+  input, textarea, select {
+    font-size: 16px;
+  }
+
   /* Thin scrollbar */
   ::-webkit-scrollbar {
     width: 6px;
@@ -45,7 +52,7 @@
   }
 
   .input {
-    @apply w-full rounded-lg border border-surface-3 bg-surface-1 px-3 py-2 text-sm text-neutral-100
+    @apply w-full rounded-lg border border-surface-3 bg-surface-1 px-3 py-2 text-base text-neutral-100
            placeholder:text-neutral-500 outline-none focus:border-accent focus:ring-1 focus:ring-accent
            transition-colors;
   }
