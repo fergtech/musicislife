@@ -25,7 +25,7 @@ export function GlobalSearch() {
           onAdded={() => {}}
           onClose={() => setOpen(false)}
         />,
-        document.body,
+        document.body as Element,
       )}
     </>
   );
