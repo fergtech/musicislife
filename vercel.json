@@ -1,11 +1,5 @@
 {
-  "buildCommand": "npx prisma generate && next build",
+  "buildCommand": "npx prisma generate && npx prisma migrate deploy && next build",
   "installCommand": "npm install",
-  "framework": "nextjs",
-  "env": {
-    "DATABASE_URL": "@database_url",
-    "NEXTAUTH_SECRET": "@nextauth_secret",
-    "NEXTAUTH_URL": "@nextauth_url",
-    "MUSICBRAINZ_CONTACT": "@musicbrainz_contact"
-  }
+  "framework": "nextjs"
 }
