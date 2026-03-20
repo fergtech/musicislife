@@ -1,4 +1,7 @@
 import { notFound } from "next/navigation";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { SharePageClient } from "@/components/SharePageClient";
 
@@ -15,6 +18,7 @@ export async function generateMetadata({ params }: Props) {
 }
 
 export default async function SharePage({ params }: Props) {
+  const session = await getServerSession(authOptions);
   const list = await prisma.list.findUnique({
     where: { shareToken: params.token },
     include: { items: { orderBy: { createdAt: "asc" } } },
@@ -41,7 +45,20 @@ export default async function SharePage({ params }: Props) {
   return (
     <div className="min-h-screen bg-surface-0">
       <header className="border-b border-surface-2 bg-surface-0/80 backdrop-blur px-4 py-4">
-        <p className="text-sm font-bold text-accent">musicislyfe</p>
+        <div className="mx-auto flex max-w-2xl items-center justify-between">
+          <Link href="/" className="text-sm font-bold text-accent">
+            musicislyfe
+          </Link>
+          {session ? (
+            <Link href="/" className="btn-secondary text-sm">
+              My Lists
+            </Link>
+          ) : (
+            <Link href="/login" className="btn-primary text-sm">
+              Log in / Sign up
+            </Link>
+          )}
+        </div>
       </header>
       <main className="mx-auto max-w-2xl px-4 py-10">
         <SharePageClient list={data} />
