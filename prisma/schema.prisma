@@ -16,8 +16,9 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  lists   List[]
-  profile Profile?
+  lists    List[]
+  profile  Profile?
+  comments Comment[]
 }
 
 model Profile {
@@ -42,8 +43,9 @@ model List {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
-  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items ListItem[]
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items    ListItem[]
+  comments Comment[]
 
   @@index([userId])
 }
@@ -83,4 +85,23 @@ model ListItem {
 enum ItemType {
   SONG
   ALBUM
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  listId    String
+  userId    String
+  parentId  String?
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  list    List      @relation(fields: [listId], references: [id], onDelete: Cascade)
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replies Comment[] @relation("CommentReplies")
+
+  @@index([listId])
+  @@index([userId])
+  @@index([parentId])
 }

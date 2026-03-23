@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { usePlayer } from "@/contexts/PlayerContext";
+import { usePlayer } from "@/lib/player-context";
 import type { ItemMetadata } from "@/types";
 
 interface ListOption {

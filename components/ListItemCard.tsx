@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePlayer } from "@/contexts/PlayerContext";
+import { usePlayer } from "@/lib/player-context";
 
 interface Props {
   item: {

@@ -1,6 +1,6 @@
 "use client";
 
-import { PlayerProvider } from "@/contexts/PlayerContext";
+import { PlayerProvider } from "@/lib/player-context";
 import { GlobalMiniPlayer } from "./GlobalMiniPlayer";
 import { PullToRefresh } from "./PullToRefresh";
 

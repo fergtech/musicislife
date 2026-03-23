@@ -69,20 +69,7 @@ export default async function PublicProfilePage({ params }: Props) {
   });
 
   return (
-    <div className="min-h-screen bg-surface-0">
-      {/* Header */}
-      <header className="border-b border-surface-2 bg-surface-0/80 backdrop-blur px-4 py-4">
-        <div className="mx-auto flex max-w-3xl items-center justify-between">
-          <Link href="/" className="text-sm font-bold text-accent">musicislyfe</Link>
-          {session ? (
-            <Link href="/" className="btn-secondary text-sm">My Lists</Link>
-          ) : (
-            <Link href="/login" className="btn-primary text-sm">Log in / Sign up</Link>
-          )}
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-3xl px-4 py-10 space-y-10">
+    <main className="mx-auto max-w-3xl px-4 py-10 space-y-10">
         {/* Private profile guard */}
         {!profile.isPublic && !isOwner ? (
           <div className="py-24 text-center space-y-2">
@@ -190,7 +177,6 @@ export default async function PublicProfilePage({ params }: Props) {
             )}
           </>
         )}
-      </main>
-    </div>
+    </main>
   );
 }

@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { AppPlayerShell } from "./AppPlayerShell";
-import { usePlayer } from "@/contexts/PlayerContext";
+import { usePlayer } from "@/lib/player-context";
 
 interface Item {
   id: string;

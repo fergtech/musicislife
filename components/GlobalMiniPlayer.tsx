@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, type ChangeEvent } from "react";
-import { usePlayer } from "@/contexts/PlayerContext";
+import { usePlayer } from "@/lib/player-context";
 import type { ItunesPreview } from "@/types";
 
 type PreviewState = "loading" | "ready" | "unavailable";

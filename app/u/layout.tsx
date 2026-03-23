@@ -1,30 +1,28 @@
 import { getServerSession } from "next-auth";
-import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { SiteHeader } from "@/components/SiteHeader";
 import { AppPlayerShell } from "@/components/AppPlayerShell";
 
-export default async function AppLayout({ children }: { children: React.ReactNode }) {
+export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession(authOptions);
-  if (!session) redirect("/login");
 
-  const profile = await prisma.profile.findUnique({
-    where:  { userId: session.user.id },
-    select: { username: true, avatarUrl: true },
-  });
-
-  const profileHref = profile ? `/u/${profile.username}` : "/settings/profile";
+  const profile = session
+    ? await prisma.profile.findUnique({
+        where:  { userId: session.user.id },
+        select: { username: true, avatarUrl: true },
+      })
+    : null;
 
   return (
     <div className="min-h-screen bg-surface-0">
       <SiteHeader
-        isAuthenticated
+        isAuthenticated={!!session}
         username={profile?.username}
         avatarUrl={profile?.avatarUrl}
       />
       <AppPlayerShell>
-        <main className="mx-auto max-w-4xl px-4 py-8">{children}</main>
+        {children}
       </AppPlayerShell>
     </div>
   );

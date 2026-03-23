@@ -3,7 +3,7 @@ import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { PublicListClient } from "@/components/PublicListClient";
+import { PublicListTabs } from "@/components/PublicListTabs";
 
 interface Props {
   params: { username: string; listId: string };
@@ -33,6 +33,13 @@ export default async function PublicListPage({ params }: Props) {
   // Respect profile privacy
   if (!profile.isPublic && !isOwner) notFound();
 
+  const currentUserProfile = session
+    ? await prisma.profile.findUnique({
+        where:  { userId: session.user.id },
+        select: { username: true },
+      })
+    : null;
+
   const list = await prisma.list.findUnique({
     where:   { id: params.listId },
     include: { items: { orderBy: { createdAt: "asc" } } },
@@ -42,20 +49,7 @@ export default async function PublicListPage({ params }: Props) {
   if (!list || list.userId !== profile.userId) notFound();
 
   return (
-    <div className="min-h-screen bg-surface-0">
-      {/* Header */}
-      <header className="border-b border-surface-2 bg-surface-0/80 backdrop-blur px-4 py-4">
-        <div className="mx-auto flex max-w-2xl items-center justify-between">
-          <Link href="/" className="text-sm font-bold text-accent">musicislyfe</Link>
-          {session ? (
-            <Link href="/" className="btn-secondary text-sm">My Lists</Link>
-          ) : (
-            <Link href="/login" className="btn-primary text-sm">Log in / Sign up</Link>
-          )}
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-2xl px-4 py-10 space-y-6">
+    <main className="mx-auto max-w-2xl px-4 py-10 space-y-6">
         {/* Breadcrumb */}
         <Link
           href={`/u/${profile.username}`}
@@ -79,16 +73,16 @@ export default async function PublicListPage({ params }: Props) {
           </Link>
         )}
 
-        {/* Art → description → item count → interactive items */}
-        <PublicListClient
+        <PublicListTabs
           listId={list.id}
+          listOwnerId={profile.userId}
           items={list.items}
           description={list.description}
-          itemCount={list.items.length}
+          currentUserId={session?.user.id ?? null}
+          currentUserUsername={currentUserProfile?.username ?? null}
         />
 
         <p className="text-xs text-neutral-700 text-center pt-4">musicislyfe</p>
-      </main>
-    </div>
+    </main>
   );
 }
