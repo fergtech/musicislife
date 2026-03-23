@@ -11,26 +11,40 @@ export function PullToRefresh({ children }: { children: React.ReactNode }) {
   const [isPending, startTransition] = useTransition();
   const [pullY, setPullY] = useState(0);
 
-  const startYRef  = useRef(0);
-  const pulling    = useRef(false);
-  const pullYRef   = useRef(0); // avoid stale closure in event handlers
+  const startYRef = useRef(0);
+  const pulling   = useRef(false);
+  const pullYRef  = useRef(0);
 
   // ── Pull-to-refresh touch handling ─────────────────────────────────────────
   useEffect(() => {
+    function atTop() {
+      // Use <= 1 tolerance — iOS can report fractional scrollTop on rubber-band
+      return (document.documentElement.scrollTop ?? window.scrollY) <= 1;
+    }
+
     function onTouchStart(e: TouchEvent) {
-      // Only start pull when already at the top of the page
-      if (window.scrollY !== 0) return;
+      if (!atTop()) return;
       startYRef.current = e.touches[0].clientY;
       pulling.current = true;
     }
 
     function onTouchMove(e: TouchEvent) {
       if (!pulling.current) return;
-      // Cancel if user scrolled down since touchstart
-      if (window.scrollY !== 0) { pulling.current = false; pullYRef.current = 0; setPullY(0); return; }
+      if (!atTop()) {
+        pulling.current = false;
+        pullYRef.current = 0;
+        setPullY(0);
+        return;
+      }
       const raw = e.touches[0].clientY - startYRef.current;
-      if (raw <= 0) { pulling.current = false; pullYRef.current = 0; setPullY(0); return; }
-      // Apply resistance so it feels natural
+      if (raw <= 0) {
+        pulling.current = false;
+        pullYRef.current = 0;
+        setPullY(0);
+        return;
+      }
+      // Block native iOS overscroll/bounce while we're driving the indicator
+      e.preventDefault();
       const next = Math.min(raw * 0.45, MAX_PULL);
       pullYRef.current = next;
       setPullY(next);
@@ -46,7 +60,8 @@ export function PullToRefresh({ children }: { children: React.ReactNode }) {
     }
 
     document.addEventListener("touchstart",  onTouchStart, { passive: true });
-    document.addEventListener("touchmove",   onTouchMove,  { passive: true });
+    // NOT passive — we need preventDefault() to suppress iOS bounce while pulling
+    document.addEventListener("touchmove",   onTouchMove,  { passive: false });
     document.addEventListener("touchend",    onTouchEnd);
     document.addEventListener("touchcancel", onTouchEnd);
 
@@ -76,7 +91,6 @@ export function PullToRefresh({ children }: { children: React.ReactNode }) {
     return () => document.removeEventListener("visibilitychange", onVisibility);
   }, [router]);
 
-  // Progress 0→1 as pullY approaches THRESHOLD
   const progress  = Math.min(pullY / THRESHOLD, 1);
   const showStrip = pullY > 6 || isPending;
 
