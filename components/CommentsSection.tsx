@@ -168,7 +168,7 @@ export function CommentsSection({ listId, listOwnerId, currentUserId, currentUse
                 placeholder="Add a comment…"
                 rows={2}
                 maxLength={1000}
-                className="input w-full resize-none text-sm"
+                className="input w-full resize-none"
               />
               <button
                 onClick={handlePost}
@@ -287,7 +287,7 @@ function CommentItem({
               <textarea
                 value={editText}
                 onChange={(e) => setEditText(e.target.value)}
-                className="input w-full resize-none text-sm"
+                className="input w-full resize-none"
                 rows={3}
                 maxLength={1000}
                 autoFocus
@@ -350,7 +350,7 @@ function CommentItem({
                 placeholder={`Replying to @${comment.author.username}…`}
                 rows={2}
                 maxLength={1000}
-                className="input w-full resize-none text-sm"
+                className="input w-full resize-none"
               />
               <button
                 onClick={submitReply}
