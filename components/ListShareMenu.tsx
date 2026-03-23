@@ -24,13 +24,32 @@ export function ListShareMenu({ listId, listName }: Props) {
   async function handleCopyLink() {
     setShareState("loading");
     setOpen(false);
-    const res = await fetch(`/api/lists/${listId}/share`);
-    if (!res.ok) { setShareState("idle"); return; }
-    const { shareToken } = await res.json();
-    const url = `${window.location.origin}/share/${shareToken}`;
-    await navigator.clipboard.writeText(url);
-    setShareState("copied");
-    setTimeout(() => setShareState("idle"), 2500);
+    try {
+      const res = await fetch(`/api/lists/${listId}/share`);
+      if (!res.ok) { setShareState("idle"); return; }
+      const { shareToken } = await res.json();
+      const url = `${window.location.origin}/share/${shareToken}`;
+
+      // navigator.clipboard requires HTTPS + user-gesture focus; unavailable in
+      // some iOS PWA contexts. Fall back to the execCommand approach.
+      try {
+        await navigator.clipboard.writeText(url);
+      } catch {
+        const el = document.createElement("textarea");
+        el.value = url;
+        el.style.cssText = "position:fixed;opacity:0;top:0;left:0;";
+        document.body.appendChild(el);
+        el.focus();
+        el.select();
+        document.execCommand("copy");
+        document.body.removeChild(el);
+      }
+
+      setShareState("copied");
+      setTimeout(() => setShareState("idle"), 2500);
+    } catch {
+      setShareState("idle");
+    }
   }
 
   async function handleRevokeLink() {

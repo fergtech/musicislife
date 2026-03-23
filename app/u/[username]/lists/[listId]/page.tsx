@@ -64,18 +64,12 @@ export default async function PublicListPage({ params }: Props) {
           ← @{profile.username}
         </Link>
 
-        {/* List header */}
-        <div className="space-y-1">
+        {/* List name */}
+        <div className="space-y-0.5">
           <p className="text-xs font-medium uppercase tracking-wider text-neutral-500">
             {isOwner ? "Your list" : `@${profile.username}'s list`}
           </p>
           <h1 className="text-2xl font-bold text-neutral-100">{list.name}</h1>
-          {list.description && (
-            <p className="text-sm text-neutral-400 leading-relaxed max-w-prose">{list.description}</p>
-          )}
-          <p className="text-xs text-neutral-600">
-            {list.items.length} {list.items.length === 1 ? "item" : "items"}
-          </p>
         </div>
 
         {/* Owner shortcut */}
@@ -85,8 +79,13 @@ export default async function PublicListPage({ params }: Props) {
           </Link>
         )}
 
-        {/* Interactive items — songs play in mini player, albums go to preview page */}
-        <PublicListClient listId={list.id} items={list.items} />
+        {/* Art → description → item count → interactive items */}
+        <PublicListClient
+          listId={list.id}
+          items={list.items}
+          description={list.description}
+          itemCount={list.items.length}
+        />
 
         <p className="text-xs text-neutral-700 text-center pt-4">musicislyfe</p>
       </main>

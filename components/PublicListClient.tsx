@@ -19,6 +19,8 @@ interface Item {
 interface Props {
   listId: string;
   items: Item[];
+  description?: string | null;
+  itemCount: number;
 }
 
 /**
@@ -26,7 +28,7 @@ interface Props {
  * songs are tap-to-play and albums navigate to the preview page — same behaviour
  * as a user's own list, but without edit/delete controls.
  */
-export function PublicListClient({ listId, items }: Props) {
+export function PublicListClient({ listId, items, description, itemCount }: Props) {
   const [artError, setArtError] = useState(false);
 
   const featuredArt = useMemo(() => {
@@ -38,6 +40,7 @@ export function PublicListClient({ listId, items }: Props) {
 
   return (
     <AppPlayerShell>
+      {/* Featured artwork — between name and description */}
       {featuredArt && !artError && (
         <div className="h-28 w-full overflow-hidden rounded-xl sm:h-36">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -50,6 +53,15 @@ export function PublicListClient({ listId, items }: Props) {
           />
         </div>
       )}
+
+      {/* Description + count — below art */}
+      {description && (
+        <p className="text-sm text-neutral-400 leading-relaxed max-w-prose">{description}</p>
+      )}
+      <p className="text-xs text-neutral-600">
+        {itemCount} {itemCount === 1 ? "item" : "items"}
+      </p>
+
       <ItemRows items={items} />
     </AppPlayerShell>
   );
