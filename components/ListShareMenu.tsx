@@ -30,23 +30,49 @@ export function ListShareMenu({ listId, listName }: Props) {
       const { shareToken } = await res.json();
       const url = `${window.location.origin}/share/${shareToken}`;
 
-      // navigator.clipboard requires HTTPS + user-gesture focus; unavailable in
-      // some iOS PWA contexts. Fall back to the execCommand approach.
-      try {
-        await navigator.clipboard.writeText(url);
-      } catch {
-        const el = document.createElement("textarea");
-        el.value = url;
-        el.style.cssText = "position:fixed;opacity:0;top:0;left:0;";
-        document.body.appendChild(el);
-        el.focus();
-        el.select();
-        document.execCommand("copy");
-        document.body.removeChild(el);
+      // 1. Web Share API — preferred on iOS PWA; opens native share sheet
+      if (typeof navigator.share === "function") {
+        try {
+          await navigator.share({ title: listName, url });
+          setShareState("copied");
+          setTimeout(() => setShareState("idle"), 2500);
+          return;
+        } catch {
+          // User cancelled share sheet — treat as idle, don't fall through to copy
+          setShareState("idle");
+          return;
+        }
       }
 
-      setShareState("copied");
-      setTimeout(() => setShareState("idle"), 2500);
+      // 2. Clipboard API (HTTPS desktop / Android Chrome)
+      let copied = false;
+      try {
+        await navigator.clipboard.writeText(url);
+        copied = true;
+      } catch { /* fall through */ }
+
+      // 3. execCommand fallback — use <input> + setSelectionRange for iOS compat
+      if (!copied) {
+        try {
+          const el = document.createElement("input");
+          el.value = url;
+          el.setAttribute("readonly", "");
+          el.style.cssText = "position:fixed;opacity:0;top:0;left:0;width:1px;";
+          document.body.appendChild(el);
+          el.focus();
+          el.setSelectionRange(0, el.value.length);
+          document.execCommand("copy");
+          document.body.removeChild(el);
+          copied = true;
+        } catch { /* give up */ }
+      }
+
+      if (copied) {
+        setShareState("copied");
+        setTimeout(() => setShareState("idle"), 2500);
+      } else {
+        setShareState("idle");
+      }
     } catch {
       setShareState("idle");
     }
@@ -61,7 +87,7 @@ export function ListShareMenu({ listId, listName }: Props) {
 
   const label =
     shareState === "loading" ? "Generating…"
-    : shareState === "copied" ? "✓ Link copied!"
+    : shareState === "copied" ? "✓ Shared!"
     : shareState === "revoked" ? "Link revoked"
     : "Share / Export";
 
